@@ -10,6 +10,7 @@ export async function GET() {
 const createSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio"),
   industry: z.string().optional(),
+  whatsapp: z.string().optional(),
   notes: z.string().optional(),
 });
 

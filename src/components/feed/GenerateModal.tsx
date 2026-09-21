@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Modal from "@/components/Modal";
 import FunnelBadge from "@/components/FunnelBadge";
+import VideoEmbed from "./VideoEmbed";
 import { Check, Copy, Loader2, Save, Sparkles } from "lucide-react";
 import clsx from "clsx";
 import {
@@ -113,20 +114,32 @@ export default function GenerateModal({
   return (
     <Modal title="Generar guiones desde esta referencia" onClose={onClose} maxWidthClass="max-w-3xl">
       <div className="flex flex-col gap-6">
-        <div className="flex gap-3 p-3 rounded-xl bg-surface-2 border border-border">
-          {video.thumbnailUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={video.thumbnailUrl}
-              alt={video.title}
-              className="w-14 h-20 object-cover rounded-lg shrink-0"
+        <div className="flex flex-col sm:flex-row gap-4 p-3 rounded-xl bg-surface-2 border border-border">
+          <div className="w-full sm:w-[220px] shrink-0 rounded-lg overflow-hidden mx-auto sm:mx-0">
+            <VideoEmbed
+              platform={video.platform}
+              url={video.url}
+              thumbnailUrl={video.thumbnailUrl}
+              title={video.title}
+              eager
             />
-          )}
+          </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium line-clamp-2">{video.title}</p>
+            <p className="text-sm font-medium">{video.title}</p>
             <p className="text-xs text-muted mt-1">
               {video.niche} · {video.authorHandle || "referencia manual"}
             </p>
+            {video.notes && <p className="text-xs text-muted mt-2 leading-relaxed">{video.notes}</p>}
+            {video.url && (
+              <a
+                href={video.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-accent-violet hover:underline mt-2 inline-block"
+              >
+                Ver publicación original ↗
+              </a>
+            )}
           </div>
         </div>
 
@@ -156,6 +169,16 @@ export default function GenerateModal({
                   className={clsx(inputClass, "mt-2")}
                 />
               )}
+              {funnelStage === "BOFU" &&
+                !clients.find((c) => c.id === clientId)?.whatsapp && (
+                  <p className="text-[11px] text-amber-400 mt-1.5">
+                    Este cliente no tiene WhatsApp cargado — el CTA va a quedar genérico. Agregalo en{" "}
+                    <a href="/clients" className="underline">
+                      Clientes
+                    </a>
+                    .
+                  </p>
+                )}
             </div>
 
             <div>

@@ -43,6 +43,7 @@ export interface ClientDTO {
   id: string;
   name: string;
   industry: string | null;
+  whatsapp: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +75,7 @@ export interface GenerateScriptsParams {
   };
   clientName: string;
   clientIndustry?: string | null;
+  clientWhatsapp?: string | null;
   variantCount: number;
   funnelStage: FunnelStage;
   angle: string;

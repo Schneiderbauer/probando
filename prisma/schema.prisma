@@ -23,6 +23,7 @@ model Client {
   id        String   @id @default(cuid())
   name      String
   industry  String?
+  whatsapp  String?
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

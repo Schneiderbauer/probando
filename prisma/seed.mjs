@@ -118,10 +118,10 @@ async function main() {
 
   const clients = await Promise.all(
     [
-      { name: "Néstor Construcciones", industry: "Construcción y remodelación" },
-      { name: "Clínica Sonrisa", industry: "Odontología" },
-      { name: "Lic. González Psicología", industry: "Psicología" },
-      { name: "NutriLaura", industry: "Salud y nutrición" },
+      { name: "Néstor Construcciones", industry: "Construcción y remodelación", whatsapp: "+54 9 11 5555-0101" },
+      { name: "Clínica Sonrisa", industry: "Odontología", whatsapp: "+54 9 11 5555-0102" },
+      { name: "Lic. González Psicología", industry: "Psicología", whatsapp: "+54 9 11 5555-0103" },
+      { name: "NutriLaura", industry: "Salud y nutrición", whatsapp: "+54 9 11 5555-0104" },
     ].map((c) => prisma.client.create({ data: c }))
   );
 

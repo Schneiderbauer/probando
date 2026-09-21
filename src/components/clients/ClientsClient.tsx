@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Users2 } from "lucide-react";
+import { MessageCircle, Plus, Trash2, Users2 } from "lucide-react";
 import type { ClientDTO } from "@/types";
 
 export default function ClientsClient({ initialClients }: { initialClients: ClientDTO[] }) {
   const [clients, setClients] = useState<ClientDTO[]>(initialClients);
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +22,19 @@ export default function ClientsClient({ initialClients }: { initialClients: Clie
       const res = await fetch("/api/clients", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, industry: industry || undefined, notes: notes || undefined }),
+        body: JSON.stringify({
+          name,
+          industry: industry || undefined,
+          whatsapp: whatsapp || undefined,
+          notes: notes || undefined,
+        }),
       });
       if (!res.ok) throw new Error("No se pudo crear el cliente");
       const created = await res.json();
       setClients((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)));
       setName("");
       setIndustry("");
+      setWhatsapp("");
       setNotes("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
@@ -55,7 +62,7 @@ export default function ClientsClient({ initialClients }: { initialClients: Clie
 
       <form
         onSubmit={handleSubmit}
-        className="grid sm:grid-cols-3 gap-3 p-4 rounded-2xl border border-border bg-surface"
+        className="grid sm:grid-cols-2 gap-3 p-4 rounded-2xl border border-border bg-surface"
       >
         <input
           required
@@ -71,16 +78,22 @@ export default function ClientsClient({ initialClients }: { initialClients: Clie
           className={inputClass}
         />
         <input
+          value={whatsapp}
+          onChange={(e) => setWhatsapp(e.target.value)}
+          placeholder="WhatsApp (ej: +54 9 11 1234-5678)"
+          className={inputClass}
+        />
+        <input
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Notas (opcional)"
           className={inputClass}
         />
-        {error && <p className="text-sm text-pink-400 sm:col-span-3">{error}</p>}
+        {error && <p className="text-sm text-pink-400 sm:col-span-2">{error}</p>}
         <button
           type="submit"
           disabled={submitting}
-          className="sm:col-span-3 flex items-center justify-center gap-2 rounded-xl gradient-brand text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-60"
+          className="sm:col-span-2 flex items-center justify-center gap-2 rounded-xl gradient-brand text-white text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity disabled:opacity-60"
         >
           <Plus className="w-4 h-4" /> Agregar cliente
         </button>
@@ -101,6 +114,11 @@ export default function ClientsClient({ initialClients }: { initialClients: Clie
               <div className="min-w-0">
                 <p className="font-medium truncate">{c.name}</p>
                 {c.industry && <p className="text-xs text-muted mt-0.5">{c.industry}</p>}
+                {c.whatsapp && (
+                  <p className="flex items-center gap-1 text-xs text-emerald-400 mt-1">
+                    <MessageCircle className="w-3.5 h-3.5" /> {c.whatsapp}
+                  </p>
+                )}
                 {c.notes && <p className="text-xs text-muted mt-1.5 line-clamp-2">{c.notes}</p>}
               </div>
               <button

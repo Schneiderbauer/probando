@@ -65,36 +65,37 @@ const DEV_TEMPLATES: Record<FunnelStage, ((ctx: DevContext) => string)[]> = {
   ],
 };
 
-const CTA_TEMPLATES: Record<FunnelStage, string[]> = {
+const CTA_TEMPLATES: Record<FunnelStage, ((whatsapp?: string | null) => string)[]> = {
   TOFU: [
-    "Comentá 'QUIERO' y te mando más info.",
-    "Seguime para la parte 2 de esto.",
-    "Etiquetá a alguien que necesita ver esto.",
-    "Guardá este video para no perderlo.",
+    () => "Comentá 'QUIERO' y te mando más info.",
+    () => "Seguime para la parte 2 de esto.",
+    () => "Etiquetá a alguien que necesita ver esto.",
+    () => "Guardá este video para no perderlo.",
   ],
   MOFU: [
-    "Mandame un DM con la palabra 'INFO' y te cuento más.",
-    "Descargá la guía gratuita en el link de la bio.",
-    "Escribime tu duda en los comentarios y te respondo en el próximo video.",
-    "Sumate a la newsletter para recibir más contenido como este.",
+    () => "Mandame un DM con la palabra 'INFO' y te cuento más.",
+    () => "Descargá la guía gratuita en el link de la bio.",
+    () => "Escribime tu duda en los comentarios y te respondo en el próximo video.",
+    () => "Sumate a la newsletter para recibir más contenido como este.",
   ],
   BOFU: [
-    "Agendá tu consulta gratuita, el link está en la bio.",
-    "Escribinos 'QUIERO EMPEZAR' por DM y coordinamos hoy mismo.",
-    "Quedan pocos cupos este mes, reservá el tuyo ahora.",
-    "Hacé clic en el link de la bio y agendá tu evaluación sin costo.",
+    (wa) => (wa ? `Escribinos por WhatsApp al ${wa} y coordinamos hoy mismo.` : "Escribinos por WhatsApp (link en la bio) y coordinamos hoy mismo."),
+    (wa) => (wa ? `Mandanos un WhatsApp al ${wa} con la palabra 'QUIERO' y te contactamos en el momento.` : "Mandanos un WhatsApp con la palabra 'QUIERO' y te contactamos en el momento."),
+    () => "Quedan pocos cupos este mes: tocá el botón de WhatsApp de la bio y arrancamos.",
+    (wa) => (wa ? `Escribinos ya al WhatsApp ${wa}, sin vueltas.` : "Escribinos ya por WhatsApp, sin vueltas."),
   ],
 };
 
 export function generateWithTemplateEngine(params: GenerateScriptsParams): GeneratedScript[] {
-  const { competitorVideo, clientName, variantCount, funnelStage, angle } = params;
+  const { competitorVideo, clientName, clientWhatsapp, variantCount, funnelStage, angle } = params;
   const resolvedAngle = angle?.trim() || firstPainPoint(competitorVideo.painPoints);
   const results: GeneratedScript[] = [];
 
   for (let i = 0; i < variantCount; i++) {
     const hookFn = pick(HOOK_TEMPLATES[funnelStage], i);
     const devFn = pick(DEV_TEMPLATES[funnelStage], i);
-    const cta = pick(CTA_TEMPLATES[funnelStage], i);
+    const ctaFn = pick(CTA_TEMPLATES[funnelStage], i);
+    const cta = ctaFn(clientWhatsapp);
 
     const hook = hookFn(resolvedAngle);
     const development = devFn({

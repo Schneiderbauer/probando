@@ -45,6 +45,7 @@ export async function POST(req: Request) {
     },
     clientName,
     clientIndustry: client?.industry,
+    clientWhatsapp: client?.whatsapp,
     variantCount,
     funnelStage,
     angle,

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
   industry: z.string().optional(),
+  whatsapp: z.string().optional(),
   notes: z.string().optional(),
 });
 

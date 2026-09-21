@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, MessageCircle, Play, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Play, PlayCircle, Sparkles } from "lucide-react";
 import PlatformBadge from "./PlatformBadge";
 import { formatCompactNumber, parseMetrics } from "@/lib/format";
 import type { CompetitorVideoDTO } from "@/types";
@@ -20,7 +20,11 @@ export default function VideoCard({
 
   return (
     <article className="group relative flex flex-col rounded-2xl overflow-hidden border border-border bg-surface hover:border-accent-violet/50 transition-colors">
-      <div className="relative aspect-[9/13] bg-surface-2 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => onGenerate(video)}
+        className="relative aspect-[9/13] bg-surface-2 overflow-hidden block w-full text-left"
+      >
         {video.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -34,6 +38,9 @@ export default function VideoCard({
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <PlayCircle className="w-12 h-12 text-white drop-shadow-lg" />
+        </div>
         <div className="absolute top-3 left-3">
           <PlatformBadge platform={video.platform} />
         </div>
@@ -66,7 +73,7 @@ export default function VideoCard({
             )}
           </div>
         </div>
-      </div>
+      </button>
 
       <div className="p-3 flex flex-col gap-3">
         <div className="flex flex-wrap gap-1.5">

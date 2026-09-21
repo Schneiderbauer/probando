@@ -9,11 +9,11 @@ const FUNNEL_RULES: Record<GenerateScriptsParams["funnelStage"], string> = {
   MOFU:
     "MOFU (autoridad / educación): el objetivo es demostrar expertise y generar confianza mostrando conocimiento real. Puede nombrar al negocio/profesional como fuente del conocimiento. El CTA es de compromiso medio (DM por info, descargar guía, dejar comentario con su duda).",
   BOFU:
-    "BOFU (venta directa): el objetivo es convertir a alguien que ya conoce el problema y está listo para actuar. Debe incluir oferta concreta, urgencia o prueba social, y mencionar al negocio/cliente explícitamente. El CTA es de alto compromiso (agendar, comprar, escribir para coordinar).",
+    "BOFU (venta directa): el objetivo es convertir a alguien que ya conoce el problema y está listo para actuar. Debe incluir oferta concreta, urgencia o prueba social, y mencionar al negocio/cliente explícitamente. El CTA es de alto compromiso y SIEMPRE debe dirigir a escribir por WhatsApp (nunca a un link genérico, DM de Instagram o formulario).",
 };
 
 function buildPrompt(params: GenerateScriptsParams): string {
-  const { competitorVideo, clientName, clientIndustry, variantCount, funnelStage, angle } = params;
+  const { competitorVideo, clientName, clientIndustry, clientWhatsapp, variantCount, funnelStage, angle } = params;
 
   return `Sos un guionista senior de una agencia de marketing digital, experto en contenido corto para TikTok e Instagram Reels.
 
@@ -26,6 +26,7 @@ CONTEXTO DEL VIDEO DE REFERENCIA (competencia, ${competitorVideo.platform}):
 CLIENTE PARA QUIEN SE ESCRIBE:
 - Nombre: ${clientName}
 - Rubro: ${clientIndustry || competitorVideo.niche}
+${clientWhatsapp ? `- WhatsApp de contacto: ${clientWhatsapp}` : ""}
 
 PARÁMETROS DE GENERACIÓN:
 - Etapa de embudo: ${funnelStage} — ${FUNNEL_RULES[funnelStage]}
@@ -36,7 +37,11 @@ INSTRUCCIONES:
 Generá ${variantCount} variantes de guion ORIGINALES (no copies el video de referencia, usalo solo como inspiración de formato y ángulo). Cada variante debe tener EXACTAMENTE estas 3 partes, respetando estrictamente las reglas de la etapa ${funnelStage}:
 1. "hook": gancho ultra potente para los primeros 3 segundos, que detenga el scroll.
 2. "development": desarrollo del problema y la solución, en 3-5 frases, alineado a la etapa del embudo.
-3. "cta": llamado a la acción específico y coherente con la etapa del embudo.
+3. "cta": llamado a la acción específico y coherente con la etapa del embudo${
+    funnelStage === "BOFU"
+      ? ` (siempre invitando a escribir por WhatsApp${clientWhatsapp ? ` al ${clientWhatsapp}` : ""})`
+      : ""
+  }.
 
 Respondé ÚNICAMENTE con un JSON válido (sin texto adicional, sin markdown, sin backticks) con esta forma exacta:
 {"variants": [{"hook": "...", "development": "...", "cta": "..."}]}`;

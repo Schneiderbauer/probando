@@ -44,7 +44,7 @@ const createSchema = z.object({
   authorHandle: z.string().optional(),
   niche: z.string().min(1, "El nicho es obligatorio"),
   painPoints: z.string().min(1, "Agregá al menos un punto de dolor"),
-  transcript: z.string().min(1, "La transcripción es obligatoria"),
+  transcript: z.string().optional().default(""),
   thumbnailUrl: z.string().optional(),
   notes: z.string().optional(),
 });
