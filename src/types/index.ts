@@ -36,7 +36,18 @@ export interface CompetitorVideoDTO {
   thumbnailUrl: string | null;
   notes: string | null;
   metrics: string | null;
+  aiConcept: string | null;
+  aiAngle: string | null;
+  aiHookPattern: string | null;
+  aiStructureNotes: string | null;
   createdAt: string;
+}
+
+export interface VideoAnalysis {
+  concept: string;
+  angle: string;
+  hookPattern: string;
+  structureNotes: string;
 }
 
 export interface ClientDTO {
@@ -72,6 +83,7 @@ export interface GenerateScriptsParams {
     painPoints: string;
     transcript: string;
     platform: Platform;
+    analysis?: VideoAnalysis | null;
   };
   clientName: string;
   clientIndustry?: string | null;

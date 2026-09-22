@@ -33,7 +33,7 @@ const createSchema = z.object({
   cta: z.string().min(1),
   fullText: z.string().min(1),
   variantNo: z.number().int().default(1),
-  model: z.string().default("template-engine"),
+  model: z.string().default("claude-opus-5"),
   favorite: z.boolean().default(true),
   competitorVideoId: z.string().optional(),
   clientId: z.string().optional(),

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { generateScripts } from "@/lib/ai";
+import { generateScripts, MissingApiKeyError, AiGenerationError } from "@/lib/ai";
+import type { VideoAnalysis } from "@/types";
 
 const bodySchema = z.object({
   competitorVideoId: z.string().min(1),
@@ -35,25 +36,50 @@ export async function POST(req: Request) {
 
   const clientName = client?.name ?? "Cliente sin especificar";
 
-  const variants = await generateScripts({
-    competitorVideo: {
-      title: video.title,
-      niche: video.niche,
-      painPoints: video.painPoints,
-      transcript: video.transcript,
-      platform: video.platform,
-    },
-    clientName,
-    clientIndustry: client?.industry,
-    clientWhatsapp: client?.whatsapp,
-    variantCount,
-    funnelStage,
-    angle,
-  });
+  const analysis: VideoAnalysis | null =
+    video.aiConcept && video.aiAngle && video.aiHookPattern && video.aiStructureNotes
+      ? {
+          concept: video.aiConcept,
+          angle: video.aiAngle,
+          hookPattern: video.aiHookPattern,
+          structureNotes: video.aiStructureNotes,
+        }
+      : null;
 
-  return NextResponse.json({
-    client,
-    competitorVideo: video,
-    variants,
-  });
+  try {
+    const variants = await generateScripts({
+      competitorVideo: {
+        title: video.title,
+        niche: video.niche,
+        painPoints: video.painPoints,
+        transcript: video.transcript,
+        platform: video.platform,
+        analysis,
+      },
+      clientName,
+      clientIndustry: client?.industry,
+      clientWhatsapp: client?.whatsapp,
+      variantCount,
+      funnelStage,
+      angle,
+    });
+
+    return NextResponse.json({
+      client,
+      competitorVideo: video,
+      variants,
+    });
+  } catch (err) {
+    if (err instanceof MissingApiKeyError) {
+      return NextResponse.json({ error: err.message, code: "missing_api_key" }, { status: 503 });
+    }
+    if (err instanceof AiGenerationError) {
+      return NextResponse.json({ error: err.message, code: "generation_failed" }, { status: 502 });
+    }
+    console.error("Unexpected error generating scripts:", err);
+    return NextResponse.json(
+      { error: "Ocurrió un error inesperado generando los guiones.", code: "unknown" },
+      { status: 500 }
+    );
+  }
 }

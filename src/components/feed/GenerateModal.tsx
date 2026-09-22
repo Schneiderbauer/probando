@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Modal from "@/components/Modal";
 import FunnelBadge from "@/components/FunnelBadge";
 import VideoEmbed from "./VideoEmbed";
-import { Check, Copy, Loader2, Save, Sparkles } from "lucide-react";
+import { AlertTriangle, Brain, Check, Copy, Loader2, Save, Sparkles } from "lucide-react";
 import clsx from "clsx";
 import {
   FUNNEL_STAGE_DESCRIPTIONS,
@@ -32,6 +32,7 @@ export default function GenerateModal({
   const [angle, setAngle] = useState(initialAngle);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [variants, setVariants] = useState<GeneratedScript[]>([]);
   const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
   const [copiedId, setCopiedId] = useState<number | null>(null);
@@ -52,6 +53,7 @@ export default function GenerateModal({
     e.preventDefault();
     setGenerating(true);
     setError(null);
+    setErrorCode(null);
     setVariants([]);
     setSavedIds(new Set());
 
@@ -71,7 +73,12 @@ export default function GenerateModal({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data?.error?.formErrors?.join(", ") || "No se pudieron generar los guiones");
+        const message =
+          typeof data?.error === "string"
+            ? data.error
+            : data?.error?.formErrors?.join(", ") || "No se pudieron generar los guiones";
+        setErrorCode(typeof data?.code === "string" ? data.code : null);
+        throw new Error(message);
       }
 
       const data = await res.json();
@@ -130,6 +137,18 @@ export default function GenerateModal({
               {video.niche} · {video.authorHandle || "referencia manual"}
             </p>
             {video.notes && <p className="text-xs text-muted mt-2 leading-relaxed">{video.notes}</p>}
+            {video.aiConcept && video.aiHookPattern && (
+              <div className="mt-2 p-2.5 rounded-lg bg-surface border border-border">
+                <p className="flex items-center gap-1.5 text-[11px] font-semibold text-accent-violet mb-1">
+                  <Brain className="w-3.5 h-3.5" /> Análisis estratégico (IA)
+                </p>
+                <p className="text-[11px] text-muted leading-relaxed">
+                  <span className="text-foreground/80">Concepto:</span> {video.aiConcept}
+                  <br />
+                  <span className="text-foreground/80">Gancho:</span> {video.aiHookPattern}
+                </p>
+              </div>
+            )}
             {video.url && (
               <a
                 href={video.url}
@@ -240,7 +259,26 @@ export default function GenerateModal({
             </datalist>
           </div>
 
-          {error && <p className="text-sm text-pink-400">{error}</p>}
+          {error && (
+            <div
+              className={clsx(
+                "flex items-start gap-2.5 p-3 rounded-xl border text-sm",
+                errorCode === "missing_api_key"
+                  ? "bg-amber-400/10 border-amber-400/30 text-amber-300"
+                  : "bg-pink-400/10 border-pink-400/30 text-pink-300"
+              )}
+            >
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">
+                  {errorCode === "missing_api_key"
+                    ? "Falta configurar la IA"
+                    : "No se pudieron generar los guiones"}
+                </p>
+                <p className="text-xs mt-0.5 opacity-90">{error}</p>
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"

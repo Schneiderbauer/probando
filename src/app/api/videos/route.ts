@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { Platform, Prisma } from "@prisma/client";
+import { analyzeCompetitorVideo, hasAiConfigured } from "@/lib/ai";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -57,5 +58,38 @@ export async function POST(req: Request) {
   }
 
   const video = await prisma.competitorVideo.create({ data: parsed.data });
-  return NextResponse.json(video, { status: 201 });
+
+  // Deep analysis is a best-effort enhancement: the reference is saved
+  // regardless of whether Claude is configured or the analysis call fails.
+  if (!hasAiConfigured()) {
+    return NextResponse.json(video, { status: 201 });
+  }
+
+  try {
+    const analysis = await analyzeCompetitorVideo(
+      {
+        title: video.title,
+        niche: video.niche,
+        painPoints: video.painPoints,
+        transcript: video.transcript,
+        platform: video.platform,
+      },
+      process.env.ANTHROPIC_API_KEY!
+    );
+
+    const analyzed = await prisma.competitorVideo.update({
+      where: { id: video.id },
+      data: {
+        aiConcept: analysis.concept,
+        aiAngle: analysis.angle,
+        aiHookPattern: analysis.hookPattern,
+        aiStructureNotes: analysis.structureNotes,
+      },
+    });
+
+    return NextResponse.json(analyzed, { status: 201 });
+  } catch (err) {
+    console.error("Video analysis failed, saved without it:", err);
+    return NextResponse.json(video, { status: 201 });
+  }
 }
